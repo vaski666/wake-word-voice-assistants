@@ -2,7 +2,8 @@ substitutions:
   name: m5stack-atom-echo
   friendly_name: M5Stack Atom Echo
   micro_wake_word_model: okay_nabu  # alexa, hey_jarvis, hey_mycroft are also supported
-
+  external_media: media_player.voice_assistant_tts
+  mute_speaker: GPIO21  #GPIO22 will set sound back to speaker
 esphome:
   name: ${name}
   name_add_mac_suffix: true
@@ -119,6 +120,18 @@ voice_assistant:
         green: 0%
         brightness: 100%
         effect: none
+# deviated from original
+    - text_sensor.template.publish: 
+        id: text_request
+        state: !lambda return x;
+  on_tts_end:
+    - homeassistant.service:
+        service: media_player.play_media
+        data:
+          entity_id: ${external_media}
+          media_content_id: !lambda 'return x;'
+          media_content_type: music
+          announce: "true"      
   on_end:
     - delay: 100ms
     - script.execute: start_wake_word
